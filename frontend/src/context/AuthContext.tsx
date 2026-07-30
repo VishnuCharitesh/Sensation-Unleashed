@@ -11,6 +11,9 @@ interface AuthContextType {
   isSubscriber: boolean;
   adminCount: number;
   canRegisterAdmin: boolean;
+  registeredUsers: RegisteredUser[];
+  vipCustomers: RegisteredUser[];
+  normalCustomers: RegisteredUser[];
   login: (email: string, password: string) => boolean;
   register: (name: string, email: string, phone: string, password: string, role?: Role) => boolean;
   logout: () => void;
@@ -19,21 +22,26 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+const loadJson = <T,>(key: string, fallback: T): T => {
+  const stored = localStorage.getItem(key);
+  if (!stored) return fallback;
+  try {
+    return JSON.parse(stored) as T;
+  } catch {
+    return fallback;
+  }
+};
+
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null);
-  const [registeredUsers, setRegisteredUsers] = useState<RegisteredUser[]>([]);
+  const [user, setUser] = useState<User | null>(() => loadJson<User | null>('sensation_user', null));
+  const [registeredUsers, setRegisteredUsers] = useState<RegisteredUser[]>(() => loadJson<RegisteredUser[]>('sensation_registered_users', []));
 
   const role: Role = user ? user.role : 'GUEST';
-  const isSubscriber: boolean = user ? (user.isSubscriber || user.role === 'ROLE_SUBSCRIBER') : false;
+  const isSubscriber: boolean = user ? (user.isSubscriber || user.role === 'ROLE_SUBSCRIBER' || user.role === 'ROLE_ADMIN') : false;
   const adminCount = registeredUsers.filter((registered) => registered.role === 'ROLE_ADMIN').length;
   const canRegisterAdmin = adminCount < 3;
-
-  useEffect(() => {
-    localStorage.removeItem('sensation_user');
-    localStorage.removeItem('sensation_registered_users');
-    setUser(null);
-    setRegisteredUsers([]);
-  }, []);
+  const vipCustomers = registeredUsers.filter((registered) => registered.isSubscriber || registered.role === 'ROLE_SUBSCRIBER' || registered.role === 'ROLE_ADMIN');
+  const normalCustomers = registeredUsers.filter((registered) => registered.role === 'ROLE_CUSTOMER' && !registered.isSubscriber);
 
   useEffect(() => {
     if (user) {
@@ -81,13 +89,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return false;
     }
 
+    const isAdmin = role === 'ROLE_ADMIN';
     const newRegisteredUser: RegisteredUser = {
       id: 'u_' + Math.random().toString(36).substr(2, 9),
       fullName,
       email,
       phone,
       role,
-      isSubscriber: false,
+      isSubscriber: isAdmin,
       password
     };
 
@@ -109,9 +118,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const activateSubscription = () => {
-    if (user) {
-      setUser({ ...user, role: 'ROLE_SUBSCRIBER', isSubscriber: true });
-    }
+    if (!user) return;
+
+    const updatedUser = { ...user, role: 'ROLE_SUBSCRIBER' as Role, isSubscriber: true };
+    setUser(updatedUser);
+    setRegisteredUsers((prev) => prev.map((registered) =>
+      registered.id === user.id ? { ...registered, role: 'ROLE_SUBSCRIBER' as Role, isSubscriber: true } : registered
+    ));
   };
 
   return (
@@ -121,13 +134,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       isSubscriber,
       adminCount,
       canRegisterAdmin,
+      registeredUsers,
+      vipCustomers,
+      normalCustomers,
       login,
       register,
       logout,
       activateSubscription
     }}>
-      {children}
-    </AuthContext.Provider>
+      {children}</AuthContext.Provider>
   );
 };
 

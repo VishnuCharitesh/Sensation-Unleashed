@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Filter, Search, Crown } from 'lucide-react';
 import { useSearchParams } from 'react-router-dom';
-import { INITIAL_PRODUCTS } from '../data/mockData';
+import { useProduct } from '../context/ProductContext';
 import { ProductCard } from '../components/ProductCard';
 
 export const ShopPage: React.FC<{ onOpenSubscription: () => void }> = ({ onOpenSubscription }) => {
@@ -9,6 +9,7 @@ export const ShopPage: React.FC<{ onOpenSubscription: () => void }> = ({ onOpenS
   const [selectedCategory, setSelectedCategory] = useState<string>('ALL');
   const [onlyExclusive, setOnlyExclusive] = useState<boolean>(false);
   const [searchQuery, setSearchQuery] = useState<string>(() => searchParams.get('q') ?? '');
+  const { products } = useProduct();
 
   useEffect(() => {
     setSearchQuery(searchParams.get('q') ?? '');
@@ -16,7 +17,7 @@ export const ShopPage: React.FC<{ onOpenSubscription: () => void }> = ({ onOpenS
 
   const categories = ['ALL', 'Ethnic & Festive', "Men's Formals", "Women's Western"];
 
-  const filteredProducts = INITIAL_PRODUCTS.filter(p => {
+  const filteredProducts = products.filter(p => {
     if (selectedCategory !== 'ALL' && p.categoryName !== selectedCategory) return false;
     if (onlyExclusive && !p.isSubscriberExclusive) return false;
     if (searchQuery.trim() && !p.name.toLowerCase().includes(searchQuery.toLowerCase())) return false;

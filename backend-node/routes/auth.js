@@ -4,6 +4,8 @@ import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
 import { register } from '../controllers/authController.js';
 import { User } from '../models/User.js';
+import { authenticate } from '../middleware/authMiddleware.js';
+import { isAdmin } from '../middleware/isAdmin.js';
 
 dotenv.config();
 const router = express.Router();
@@ -11,6 +13,10 @@ const JWT_SECRET = process.env.JWT_SECRET || 'secret';
 const JWT_EXPIRES_IN = '1h';
 
 router.post('/register', register);
+
+router.get('/admin-only', authenticate, isAdmin, (req, res) => {
+  res.json({ message: 'This route is only accessible to admin users.', user: req.user });
+});
 
 router.post('/login', async (req, res) => {
   try {

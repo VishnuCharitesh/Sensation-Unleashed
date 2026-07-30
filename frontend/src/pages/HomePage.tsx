@@ -1,14 +1,16 @@
 import React from 'react';
 import { Crown, ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { INITIAL_PRODUCTS } from '../data/mockData';
 import { ProductCard } from '../components/ProductCard';
 import { useAuth } from '../context/AuthContext';
+import { useProduct } from '../context/ProductContext';
 import logo from '../assets/logo.png';
 
 export const HomePage: React.FC<{ onOpenSubscription: () => void }> = ({ onOpenSubscription }) => {
-  const { isSubscriber } = useAuth();
-  const featuredProducts = INITIAL_PRODUCTS.slice(0, 4);
+  const { isSubscriber, user } = useAuth();
+  const isAdmin = user?.role === 'ROLE_ADMIN';
+  const { products } = useProduct();
+  const featuredProducts = products.slice(0, 4);
 
   return (
     <div className="space-y-16 pb-12">
@@ -37,7 +39,7 @@ export const HomePage: React.FC<{ onOpenSubscription: () => void }> = ({ onOpenS
               <ArrowRight className="w-4 h-4" />
             </Link>
 
-            {!isSubscriber && (
+            {!isSubscriber && !isAdmin && (
               <button
                 onClick={onOpenSubscription}
                 className="px-6 py-3.5 bg-white hover:bg-gray-100 text-mono-900 border border-mono-300 font-bold text-sm rounded-xl flex items-center space-x-2 transition-transform hover:scale-105"
@@ -64,12 +66,18 @@ export const HomePage: React.FC<{ onOpenSubscription: () => void }> = ({ onOpenS
           </div>
         </div>
 
-        <button
-          onClick={onOpenSubscription}
-          className="px-6 py-3 bg-mono-900 hover:bg-mono-800 text-white font-black text-sm rounded-xl shadow-xl transition-transform hover:scale-105 whitespace-nowrap"
-        >
-          {isSubscriber ? 'Manage VIP Membership' : 'Activate VIP for ₹500'}
-        </button>
+        {!isAdmin ? (
+          <button
+            onClick={onOpenSubscription}
+            className="px-6 py-3 bg-mono-900 hover:bg-mono-800 text-white font-black text-sm rounded-xl shadow-xl transition-transform hover:scale-105 whitespace-nowrap"
+          >
+            {isSubscriber ? 'Manage VIP Membership' : 'Activate VIP for ₹500'}
+          </button>
+        ) : (
+          <span className="inline-flex items-center px-4 py-3 rounded-xl bg-mono-50 text-mono-700 text-sm font-semibold">
+            Admin accounts already have VIP access.
+          </span>
+        )}
       </section>
 
       {/* Featured Products Grid */}

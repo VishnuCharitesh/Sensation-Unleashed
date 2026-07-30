@@ -1,10 +1,11 @@
 import React from 'react';
 import { Sparkles, Clock } from 'lucide-react';
-import { INITIAL_PRODUCTS } from '../data/mockData';
+import { useProduct } from '../context/ProductContext';
 import { ProductCard } from '../components/ProductCard';
 
 export const OffersPage: React.FC<{ onOpenSubscription: () => void }> = ({ onOpenSubscription }) => {
-  const offerProducts = INITIAL_PRODUCTS.filter(p => p.isEarlyAccess || p.isSubscriberExclusive);
+  const { products } = useProduct();
+  const offerProducts = products.filter(p => p.isEarlyAccess || p.isSubscriberExclusive);
 
   return (
     <div className="space-y-8 pb-12">

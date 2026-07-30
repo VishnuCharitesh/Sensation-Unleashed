@@ -7,6 +7,7 @@ import logo from '../assets/logo.png';
 
 export const Navbar: React.FC<{ onOpenSubscription: () => void }> = ({ onOpenSubscription }) => {
   const { user, isSubscriber, logout } = useAuth();
+  const isAdmin = user?.role === 'ROLE_ADMIN';
   const { itemCount, setIsCartOpen } = useCart();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -52,10 +53,12 @@ export const Navbar: React.FC<{ onOpenSubscription: () => void }> = ({ onOpenSub
           {/* Navigation Links */}
           <nav className="hidden lg:flex items-center space-x-6 text-sm font-medium">
             <Link to="/shop" className="text-mono-600 hover:text-mono-900 transition-colors">Shop Catalog</Link>
-            <Link to="/subscription" className="text-mono-600 hover:text-mono-900 transition-colors flex items-center gap-1">
-              <Crown className="w-4 h-4 text-mono-900" />
-              <span>VIP Membership</span>
-            </Link>
+            {user?.role !== 'ROLE_ADMIN' && (
+              <Link to="/subscription" className="text-mono-600 hover:text-mono-900 transition-colors flex items-center gap-1">
+                <Crown className="w-4 h-4 text-mono-900" />
+                <span>VIP Membership</span>
+              </Link>
+            )}
             <Link to="/offers" className="text-mono-600 hover:text-mono-900 transition-colors">Festive Offers</Link>
             <Link to="/support" className="text-mono-600 hover:text-mono-900 transition-colors">Support</Link>
           </nav>
@@ -63,7 +66,7 @@ export const Navbar: React.FC<{ onOpenSubscription: () => void }> = ({ onOpenSub
           {/* Right Action Icons */}
           <div className="flex items-center space-x-4">
             {/* VIP Status / Subscribe Action */}
-            {isSubscriber ? (
+            {isAdmin ? null : isSubscriber ? (
               <div className="hidden sm:flex items-center gap-1.5 bg-mono-900 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-md">
                 <Crown className="w-4 h-4 fill-white" />
                 <span>VIP MEMBER (₹500/mo)</span>
@@ -96,7 +99,7 @@ export const Navbar: React.FC<{ onOpenSubscription: () => void }> = ({ onOpenSub
             {user ? (
               <div className="flex items-center space-x-2">
                 <Link
-                  to={isSubscriber ? "/subscription" : "/shop"}
+                  to={user.role === 'ROLE_ADMIN' ? '/admin' : (isSubscriber ? '/subscription' : '/shop')}
                   className="flex items-center space-x-2 p-2 rounded-xl bg-gray-100 border border-gray-200 hover:border-mono-900 transition-all"
                 >
                   <UserIcon className="w-5 h-5 text-mono-900" />
@@ -145,7 +148,9 @@ export const Navbar: React.FC<{ onOpenSubscription: () => void }> = ({ onOpenSub
           </form>
 
           <Link to="/shop" onClick={() => setIsMobileMenuOpen(false)} className="block text-mono-900 py-2 font-medium">Shop Catalog</Link>
-          <Link to="/subscription" onClick={() => setIsMobileMenuOpen(false)} className="block text-mono-900 py-2 font-medium">₹500 VIP Membership</Link>
+          {user?.role !== 'ROLE_ADMIN' && (
+            <Link to="/subscription" onClick={() => setIsMobileMenuOpen(false)} className="block text-mono-900 py-2 font-medium">₹500 VIP Membership</Link>
+          )}
           <Link to="/offers" onClick={() => setIsMobileMenuOpen(false)} className="block text-mono-900 py-2 font-medium">Festive Offers</Link>
           <Link to="/support" onClick={() => setIsMobileMenuOpen(false)} className="block text-mono-900 py-2 font-medium">Support & FAQ</Link>
         </div>

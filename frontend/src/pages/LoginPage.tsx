@@ -11,7 +11,7 @@ export const LoginPage: React.FC = () => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isAdminRegister, setIsAdminRegister] = useState(false);
-  const { login, register, canRegisterAdmin } = useAuth();
+  const { login, register, canRegisterAdmin, registeredUsers } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -24,15 +24,32 @@ export const LoginPage: React.FC = () => {
         setError('Login failed. Please register first or check your credentials.');
         return;
       }
-    } else {
-      const role = isAdminRegister ? 'ROLE_ADMIN' : 'ROLE_CUSTOMER';
-      const success = register(fullName, email, phone, password, role);
-      if (!success) {
-        setError(isAdminRegister
-          ? 'Admin registration is closed or email already registered.'
-          : 'Registration failed. Email already registered.');
+
+      const existingUser = registeredUsers.find(
+        (registered) => registered.email.toLowerCase() === email.toLowerCase()
+      );
+
+      if (existingUser?.role === 'ROLE_ADMIN') {
+        navigate('/admin');
         return;
       }
+
+      navigate('/');
+      return;
+    }
+
+    const role = isAdminRegister ? 'ROLE_ADMIN' : 'ROLE_CUSTOMER';
+    const success = register(fullName, email, phone, password, role);
+    if (!success) {
+      setError(isAdminRegister
+        ? 'Admin registration is closed or email already registered.'
+        : 'Registration failed. Email already registered.');
+      return;
+    }
+
+    if (role === 'ROLE_ADMIN') {
+      navigate('/admin');
+      return;
     }
 
     navigate('/');

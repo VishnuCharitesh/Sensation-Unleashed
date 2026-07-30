@@ -3,7 +3,8 @@ import { X, Crown, CheckCircle2, Zap } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 export const SubscriptionModal: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpen, onClose }) => {
-  const { activateSubscription } = useAuth();
+  const { activateSubscription, user } = useAuth();
+  const isAdmin = user?.role === 'ROLE_ADMIN';
   const [selectedMethod, setSelectedMethod] = useState<'UPI' | 'CARD' | 'NETBANKING'>('UPI');
   const [isProcessing, setIsProcessing] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
@@ -44,6 +45,31 @@ export const SubscriptionModal: React.FC<{ isOpen: boolean; onClose: () => void 
             </div>
             <h3 className="text-2xl font-black text-mono-900">Welcome to Sensation VIP!</h3>
             <p className="text-sm text-mono-600">Your ₹500/month subscription is ACTIVE. Exclusive subscriber pricing is now enabled across the entire store!</p>
+          </div>
+        ) : isAdmin ? (
+          <div className="space-y-6">
+            <div className="flex items-center space-x-3">
+              <div className="w-12 h-12 rounded-2xl bg-mono-900 flex items-center justify-center text-white shadow-lg">
+                <Crown className="w-6 h-6 fill-white" />
+              </div>
+              <div>
+                <span className="text-xs font-bold text-mono-500 uppercase tracking-widest">Admin Account</span>
+                <h2 className="text-2xl font-black">Permanent VIP Access</h2>
+              </div>
+            </div>
+
+            <div className="bg-mono-50 p-4 rounded-2xl border border-gray-200">
+              <p className="text-sm text-mono-700">
+                Admin users already have permanent VIP privileges. No monthly subscription is required.
+              </p>
+            </div>
+
+            <button
+              onClick={onClose}
+              className="w-full py-4 bg-mono-900 hover:bg-mono-800 text-white font-black text-sm rounded-xl shadow-xl transition-transform hover:scale-[1.02]"
+            >
+              Close
+            </button>
           </div>
         ) : (
           <div className="space-y-6">

@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 
 export const SubscriptionPage: React.FC<{ onOpenSubscription: () => void }> = ({ onOpenSubscription }) => {
   const { isSubscriber, user } = useAuth();
+  const isAdmin = user?.role === 'ROLE_ADMIN';
 
   return (
     <div className="max-w-4xl mx-auto space-y-12 pb-12">
@@ -22,7 +23,7 @@ export const SubscriptionPage: React.FC<{ onOpenSubscription: () => void }> = ({
       </div>
 
       {/* Active Membership Card if user is subscribed */}
-      {isSubscriber && (
+      {(isSubscriber || isAdmin) && (
         <div className="bg-mono-900 text-white p-8 rounded-3xl shadow-2xl space-y-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
@@ -35,7 +36,7 @@ export const SubscriptionPage: React.FC<{ onOpenSubscription: () => void }> = ({
               </div>
             </div>
             <span className="bg-white text-mono-900 text-xs font-black px-3 py-1.5 rounded-full">
-              ₹500 / Month
+              {isAdmin ? 'Admin VIP Access' : 'VIP Member'}
             </span>
           </div>
 
@@ -100,12 +101,22 @@ export const SubscriptionPage: React.FC<{ onOpenSubscription: () => void }> = ({
               </p>
             </div>
 
-            <button
-              onClick={onOpenSubscription}
-              className="w-full py-3.5 bg-mono-900 hover:bg-mono-800 text-white font-black text-sm rounded-xl shadow-xl"
-            >
-              {isSubscriber ? 'Manage Renewal Settings' : 'Subscribe Now for ₹500/mo'}
-            </button>
+            {isAdmin ? (
+              <button
+                type="button"
+                className="w-full py-3.5 bg-mono-700 text-white font-black text-sm rounded-xl shadow-xl cursor-not-allowed"
+                disabled
+              >
+                Admins are always VIP
+              </button>
+            ) : (
+              <button
+                onClick={onOpenSubscription}
+                className="w-full py-3.5 bg-mono-900 hover:bg-mono-800 text-white font-black text-sm rounded-xl shadow-xl"
+              >
+                {isSubscriber ? 'Manage Renewal Settings' : 'Subscribe Now for ₹500/mo'}
+              </button>
+            )}
           </div>
         </div>
       </div>

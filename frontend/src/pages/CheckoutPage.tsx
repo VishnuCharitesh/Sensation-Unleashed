@@ -3,6 +3,8 @@ import { CheckCircle2, Lock, MapPin, CreditCard } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
+import { useProduct } from '../context/ProductContext';
+import { useOrders } from '../context/OrderContext';
 
 export const CheckoutPage: React.FC = () => {
   const { cart, totalAmount, totalSavings, clearCart } = useCart();
@@ -37,15 +39,29 @@ export const CheckoutPage: React.FC = () => {
     );
   }
 
+  const { decrementVariantStock } = useProduct();
+  const { addOrder } = useOrders();
+
   const handlePlaceOrder = (e: React.FormEvent) => {
     e.preventDefault();
     setIsProcessing(true);
+
     setTimeout(() => {
-      setIsProcessing(false);
-      const generatedOrderNum = 'ORD-' + Math.floor(100000 + Math.random() * 900000);
-      setOrderNumber(generatedOrderNum);
+      const createdOrder = addOrder(
+        cart,
+        user ? user.id : 'guest',
+        user ? user.email : 'guest@example.com',
+        user ? user.fullName : 'Guest Customer',
+        isSubscriber,
+        paymentMethod
+      );
+      cart.forEach((item) => {
+        decrementVariantStock(item.product.id, item.selectedVariant.id, item.quantity);
+      });
+      setOrderNumber(createdOrder.orderNumber);
       setOrderCompleted(true);
       clearCart();
+      setIsProcessing(false);
     }, 1500);
   };
 

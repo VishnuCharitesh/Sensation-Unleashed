@@ -46,22 +46,47 @@ export interface OrderItem {
   size: string;
   color: string;
   quantity: number;
+  regularPrice: number;
   unitPrice: number;
+  discountAmount: number;
   subtotal: number;
 }
 
 export interface Order {
   id: string;
   orderNumber: string;
+  customerId: string;
+  customerEmail: string;
   totalAmount: number;
   discountAmount: number;
   finalAmount: number;
   orderStatus: string;
   paymentStatus: string;
+  paymentMethod: 'UPI' | 'CARD' | 'NETBANKING';
   shippingAddress: string;
   isSubscriberOrder: boolean;
   createdAt: string;
   items: OrderItem[];
+}
+
+export interface CustomerProfile {
+  id: string;
+  fullName: string;
+  email: string;
+  phone: string;
+  role: Role;
+  isSubscriber: boolean;
+  lastOrder?: string;
+  lifetimeValue: number;
+}
+
+export interface PaymentTransaction {
+  id: string;
+  orderId: string;
+  amount: number;
+  paymentMethod: 'UPI' | 'CARD' | 'NETBANKING';
+  paymentStatus: 'Paid' | 'Pending' | 'Failed';
+  createdAt: string;
 }
 
 export interface Subscription {
